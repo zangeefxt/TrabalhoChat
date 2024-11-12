@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat em Tempo Real</title>
+    <style>
+        /* Reset básico */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f4f4f9;
+        }
+        
+        #chat-container {
+            width: 400px;
+            max-width: 100%;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        #header {
+            background-color: #4CAF50;
+            padding: 10px;
+            color: white;
+            text-align: center;
+        }
+
+        #room-selector {
+            padding: 15px;
+            text-align: center;
+            background-color: #f9f9f9;
+            border-bottom: 1px solid #ddd;
+        }
+
+        #rooms {
+            padding: 8px;
+            width: 100%;
+            max-width: 300px;
+            margin-top: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+
+        #messages {
+            padding: 15px;
+            height: 300px;
+            overflow-y: auto;
+            border-bottom: 1px solid #ddd;
+            background-color: #fafafa;
+        }
+
+        #messages p {
+            padding: 5px 10px;
+            background-color: #e1ffe1;
+            border-radius: 4px;
+            margin-bottom: 8px;
+        }
+
+        #input-container {
+            display: flex;
+            padding: 10px;
+            background-color: #f1f1f1;
+        }
+
+        #messageInput {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+
+        button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div id="chat-container">
+        <div id="header">
+            <h1>Chat em Tempo Real</h1>
+        </div>
+        <div id="room-selector">
+            <label for="rooms">Escolha uma sala:</label>
+            <select id="rooms">
+                <option value="sala1">Sala 1</option>
+                <option value="sala2">Sala 2</option>
+            </select>
+            <button onclick="joinRoom()">Entrar</button>
+        </div>
+        <div id="messages"></div>
+        <div id="input-container">
+            <input id="messageInput" type="text" placeholder="Digite uma mensagem" />
+            <button onclick="sendMessage()">Enviar</button>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+
+        function joinRoom() {
+            const room = document.getElementById('rooms').value;
+            socket.emit('joinRoom', room);
+            document.getElementById('messages').innerHTML = `<p><em>Você entrou na sala: ${room}</em></p>`;
+        }
+
+        function sendMessage() {
+            const room = document.getElementById('rooms').value;
+            const message = document.getElementById('messageInput').value;
+            if (message.trim() !== '') {
+                socket.emit('chatMessage', { room, message });
+                document.getElementById('messageInput').value = '';
+            }
+        }
+
+        socket.on('message', (message) => {
+            const messagesDiv = document.getElementById('messages');
+            const messageElement = document.createElement('p');
+            messageElement.textContent = message;
+            messagesDiv.appendChild(messageElement);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight; // Rola para o fim das mensagens
+        });
+    </script>
+</body>
+</html>
